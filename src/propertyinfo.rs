@@ -19,7 +19,7 @@ extern crate libc;
 
 use propertyinfo::libc::c_int;
 use glib_gobject::GParamFlags;
-use types::{GIBaseInfo, GIPropertyInfo, GITypeInfo, GITransfer};
+use types::{GIPropertyInfo, GITypeInfo, GITransfer};
 
 use std::mem::transmute;
 
@@ -53,6 +53,6 @@ pub fn get_ownership_transfer(info: *GIPropertyInfo) -> Option<GITransfer> {
 
 
 /// Convert GIBaseInfo to GIPropertyInfo.
-pub fn to_gi_property_info(object: *GIBaseInfo) -> *GIPropertyInfo {
+pub fn to_gi_property_info<T>(object: *T) -> *GIPropertyInfo {
     unsafe { transmute(object) }
 }

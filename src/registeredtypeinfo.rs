@@ -20,7 +20,7 @@ extern crate libc;
 use registeredtypeinfo::libc::c_char;
 use utils::to_string;
 use glib_gobject::GType;
-use types::{GIBaseInfo, GIRegisteredTypeInfo};
+use types::GIRegisteredTypeInfo;
 
 use std::mem::transmute;
 
@@ -52,6 +52,6 @@ pub fn get_g_type(info: *GIRegisteredTypeInfo) -> GType {
 
 
 /// Convert GIBaseInfo to GIRegisteredTypeInfo.
-pub fn to_gi_registeredtype_info(object: *GIBaseInfo) -> *GIRegisteredTypeInfo {
+pub fn to_gi_registeredtype_info<T>(object: *T) -> *GIRegisteredTypeInfo {
     unsafe { transmute(object) }
 }

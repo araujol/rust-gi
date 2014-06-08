@@ -19,8 +19,8 @@ extern crate libc;
 
 use arginfo::libc::c_int;
 use glib_gobject::GBoolean;
-use types::{GIBaseInfo, GIArgInfo, GITypeInfo, 
-            GIScopeType, GIDirection, GITransfer};
+use types::{GIArgInfo, GITypeInfo, GIScopeType,
+            GIDirection, GITransfer};
 
 use std::mem::transmute;
 
@@ -115,6 +115,6 @@ pub fn load_type(info: *GIArgInfo, type_: *GITypeInfo) {
 
 
 /// Convert GIBaseInfo to GIArgInfo.
-pub fn to_gi_arg_info(object: *GIBaseInfo) -> *GIArgInfo {
+pub fn to_gi_arg_info<T>(object: *T) -> *GIArgInfo {
     unsafe { transmute(object) }
 }

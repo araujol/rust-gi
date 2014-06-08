@@ -19,8 +19,8 @@ extern crate libc;
 
 use unioninfo::libc::{c_char, c_int, size_t};
 use glib_gobject::GBoolean;
-use types::{GIBaseInfo, GITypeInfo, GIUnionInfo, 
-            GIFieldInfo, GIFunctionInfo, GIConstantInfo};
+use types::{GITypeInfo, GIUnionInfo, GIFieldInfo,
+            GIFunctionInfo, GIConstantInfo};
 
 use std::mem::transmute;
 
@@ -101,6 +101,6 @@ pub fn get_alignment(info: *GIUnionInfo) -> size_t {
 
 
 /// Convert GIBaseInfo to GIUnionInfo.
-pub fn to_gi_union_info(object: *GIBaseInfo) -> *GIUnionInfo {
+pub fn to_gi_union_info<T>(object: *T) -> *GIUnionInfo {
     unsafe { transmute(object) }
 }

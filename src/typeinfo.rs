@@ -18,7 +18,7 @@
 extern crate libc;
 
 use vfuncinfo::libc::{c_char, c_int};
-use types::{GITypeInfo, GITypeTag, GIInfoType};
+use types::{GIBaseInfo, GITypeInfo, GITypeTag, GIInfoType, GIArrayType};
 use glib_gobject::GBoolean;
 use utils::to_string;
 
@@ -28,6 +28,13 @@ extern "C" {
     fn g_type_tag_to_string(type_: c_int) -> *c_char;
     fn g_info_type_to_string(type_: c_int) -> *c_char;
     fn g_type_info_is_pointer(info: *GITypeInfo) -> GBoolean;
+    fn g_type_info_get_tag(info: *GITypeInfo) -> c_int;
+    fn g_type_info_get_param_type(info: *GITypeInfo, n: c_int) -> *GITypeInfo;
+    fn g_type_info_get_interface(info: *GITypeInfo) -> *GIBaseInfo;
+    fn g_type_info_get_array_length(info: *GITypeInfo) -> c_int;
+    fn g_type_info_get_array_fixed_size(info: *GITypeInfo) -> c_int;
+    fn g_type_info_is_zero_terminated(info: *GITypeInfo) -> GBoolean;
+    fn g_type_info_get_array_type(info: *GITypeInfo) -> c_int;
 }
 
 
@@ -44,4 +51,44 @@ pub fn info_type_to_string(type_: GIInfoType) -> Option<String> {
 /// Obtain if the type is passed as a reference.
 pub fn is_pointer(info: *GITypeInfo) -> GBoolean {
     unsafe { g_type_info_is_pointer(info) }
+}
+
+/// Obtain the type tag for the type.
+pub fn get_tag(info: *GITypeInfo) -> Option<GITypeTag> {
+    let typetag: Option<GITypeTag> =
+        FromPrimitive::from_i32(unsafe { g_type_info_get_tag(info) } );
+    return typetag
+}
+
+/// Obtain the parameter type n.
+pub fn get_param_type(info: *GITypeInfo, n: int) -> *GITypeInfo {
+    unsafe { g_type_info_get_param_type(info, n as c_int) }
+}
+
+/// For types which have GI_TYPE_TAG_INTERFACE such as GObjects and boxed values,
+/// this function returns full information about the referenced type.
+pub fn get_interface(info: *GITypeInfo) -> *GIBaseInfo {
+    unsafe { g_type_info_get_interface(info) }
+}
+
+/// Obtain the array length of the type.
+pub fn get_array_length(info: *GITypeInfo) -> int {
+    unsafe { g_type_info_get_array_length(info) as int }
+}
+
+/// Obtain the fixed array size of the type.
+pub fn get_array_fixed_size(info: *GITypeInfo) -> int {
+    unsafe { g_type_info_get_array_fixed_size(info) as int }
+}
+
+/// Obtain if the last element of the array is NULL.
+pub fn is_zero_terminated(info: *GITypeInfo) -> GBoolean {
+    unsafe { g_type_info_is_zero_terminated(info) }
+}
+
+/// Obtain the array type for this type.
+pub fn get_array_type(info: *GITypeInfo) -> Option<GIArrayType> {
+    let arraytype: Option<GIArrayType> =
+        FromPrimitive::from_i32(unsafe { g_type_info_get_array_type(info) });
+    return arraytype
 }

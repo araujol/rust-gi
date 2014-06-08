@@ -19,7 +19,7 @@ extern crate libc;
 
 use signalinfo::libc::c_int;
 use glib_gobject::{GBoolean, GSignalFlags};
-use types::{GIBaseInfo, GISignalInfo, GIVFuncInfo};
+use types::{GISignalInfo, GIVFuncInfo};
 
 use std::mem::transmute;
 
@@ -52,6 +52,6 @@ pub fn true_stops_emit(info: *GISignalInfo) -> GBoolean {
 
 
 /// Convert GIBaseInfo to GISignalInfo.
-pub fn to_gi_signal_info(object: *GIBaseInfo) -> *GISignalInfo {
+pub fn to_gi_signal_info<T>(object: *T) -> *GISignalInfo {
     unsafe { transmute(object) }
 }

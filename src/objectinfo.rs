@@ -19,7 +19,7 @@ extern crate libc;
 
 use objectinfo::libc::{c_void, c_char, c_int};
 use utils::to_string;
-use types::{GIBaseInfo, GIObjectInfo, GIFunctionInfo};
+use types::{GIObjectInfo, GIFunctionInfo};
 use glib_gobject::{GValue, GBoolean};
 
 use std::mem::transmute;
@@ -75,6 +75,6 @@ pub fn get_method(info: *GIObjectInfo, n: int) -> *GIFunctionInfo {
 
 
 /// Convert GIBaseInfo to GIObjectInfo.
-pub fn to_gi_object_info(object: *GIBaseInfo) -> *GIObjectInfo {
+pub fn to_gi_object_info<T>(object: *T) -> *GIObjectInfo {
     unsafe { transmute(object) }
 }

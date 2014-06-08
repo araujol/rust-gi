@@ -19,8 +19,7 @@ extern crate libc;
 
 use fieldinfo::libc::c_int;
 use glib_gobject::{GPointer, GBoolean};
-use types::{GIBaseInfo, GITypeInfo, GIFieldInfo, 
-            GIArgument, GIFieldInfoFlags};
+use types::{GITypeInfo, GIFieldInfo, GIArgument, GIFieldInfoFlags};
 
 use std::mem::transmute;
 
@@ -76,6 +75,6 @@ pub fn set_field(info: *GIFieldInfo, mem: GPointer, value: *GIArgument) -> GBool
 
 
 /// Convert GIBaseInfo to GIFieldInfo.
-pub fn to_gi_struct_info(object: *GIBaseInfo) -> *GIFieldInfo {
+pub fn to_gi_field_info<T>(object: *T) -> *GIFieldInfo {
     unsafe { transmute(object) }
 }

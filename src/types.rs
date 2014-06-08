@@ -103,6 +103,7 @@ pub enum GIScopeType {
     GIScopeTypeNotified
 }
 
+#[deriving(Show, FromPrimitive)]
 pub enum GITypeTag {
     /* Basic types */
     GITypeTagVoid      =  0,
@@ -132,6 +133,7 @@ pub enum GITypeTag {
     /* Note - there is currently only room for 32 tags */
 }
 
+#[deriving(Show, FromPrimitive)]
 pub enum GIArrayType {
     GIArrayTypeC,
     GIArrayTypeArray,

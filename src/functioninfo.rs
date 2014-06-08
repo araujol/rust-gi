@@ -19,7 +19,7 @@ extern crate libc;
 
 use functioninfo::libc::{c_char, c_int};
 use utils::to_string;
-use types::{GIBaseInfo, GIFunctionInfo, GIFunctionInfoFlags, 
+use types::{GIFunctionInfo, GIFunctionInfoFlags,
             GIVFuncInfo, GIPropertyInfo};
 
 use std::mem::transmute;
@@ -63,6 +63,6 @@ pub fn get_vfunc(info: *GIFunctionInfo) -> *GIVFuncInfo {
 
 
 /// Convert GIBaseInfo to GIFunctionInfo.
-pub fn to_gi_function_info(object: *GIBaseInfo) -> *GIFunctionInfo {
+pub fn to_gi_function_info<T>(object: *T) -> *GIFunctionInfo {
     unsafe { transmute(object) }
 }

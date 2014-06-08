@@ -18,7 +18,7 @@
 extern crate libc;
 
 use enuminfo::libc::c_int;
-use types::{GIBaseInfo, GIEnumInfo, GIValueInfo};
+use types::{GIEnumInfo, GIValueInfo};
 
 use std::mem::transmute;
 
@@ -48,6 +48,6 @@ pub fn get_n_methods(info: *GIEnumInfo) -> int {
 
 
 /// Convert GIBaseInfo to GIEnumInfo.
-pub fn to_gi_enum_info(object: *GIBaseInfo) -> *GIEnumInfo {
+pub fn to_gi_enum_info<T>(object: *T) -> *GIEnumInfo {
     unsafe { transmute(object) }
 }

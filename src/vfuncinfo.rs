@@ -18,8 +18,7 @@
 extern crate libc;
 
 use vfuncinfo::libc::c_int;
-use types::{GIBaseInfo, GIVFuncInfo, GIVFuncInfoFlags, 
-            GISignalInfo, GIFunctionInfo};
+use types::{GIVFuncInfo, GIVFuncInfoFlags, GISignalInfo, GIFunctionInfo};
 
 use std::mem::transmute;
 
@@ -58,6 +57,6 @@ pub fn get_invoker(info: *GIVFuncInfo) -> *GIFunctionInfo {
 
 
 /// Convert GIBaseInfo to GIVFuncInfo.
-pub fn to_gi_arg_info(object: *GIBaseInfo) -> *GIVFuncInfo {
+pub fn to_gi_vfunc_info<T>(object: *T) -> *GIVFuncInfo {
     unsafe { transmute(object) }
 }

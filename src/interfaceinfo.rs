@@ -17,8 +17,10 @@
 
 extern crate libc;
 
-use vfuncinfo::libc::{c_char, c_int};
-use types::{GIBaseInfo, GIInterfaceInfo, GIPropertyInfo, GIFunctionInfo};
+use interfaceinfo::libc::{c_char, c_int};
+use types::{GIBaseInfo, GIInterfaceInfo, GIPropertyInfo,
+            GIFunctionInfo, GIVFuncInfo, GISignalInfo,
+            GIConstantInfo, GIStructInfo};
 
 use std::mem::transmute;
 
@@ -32,6 +34,15 @@ extern "C" {
     fn g_interface_info_get_n_methods(info: *GIInterfaceInfo) -> c_int;
     fn g_interface_info_get_method(info: *GIInterfaceInfo, n: c_int) -> *GIFunctionInfo;
     fn g_interface_info_find_method(info: *GIInterfaceInfo, name: *c_char) -> *GIFunctionInfo;
+    fn g_interface_info_get_n_signals(info: *GIInterfaceInfo) -> c_int;
+    fn g_interface_info_get_signal(info: *GIInterfaceInfo, n: c_int) -> *GISignalInfo;
+    fn g_interface_info_find_signal(info: *GIInterfaceInfo, name: *c_char) -> *GISignalInfo;
+    fn g_interface_info_get_n_vfuncs(info: *GIInterfaceInfo) -> c_int;
+    fn g_interface_info_get_vfunc(info: *GIInterfaceInfo, n: c_int) -> *GIVFuncInfo;
+    fn g_interface_info_find_vfunc(info: *GIInterfaceInfo, name: *c_char) -> *GIVFuncInfo;
+    fn g_interface_info_get_n_constants(info: *GIInterfaceInfo) -> c_int;
+    fn g_interface_info_get_constant(info: *GIInterfaceInfo, n: c_int) -> *GIConstantInfo;
+    fn g_interface_info_get_iface_struct(info: *GIInterfaceInfo) -> *GIStructInfo;
 }
 
 
@@ -75,8 +86,56 @@ pub fn find_method(info: *GIInterfaceInfo, name: &str) -> *GIFunctionInfo {
     })
 }
 
+/// Obtain an interface type signal at index n.
+pub fn get_signal(info: *GIInterfaceInfo, n: int) -> *GISignalInfo {
+    unsafe { g_interface_info_get_signal(info, n as c_int) }
+}
+
+/// Obtain the number of signals that this interface type has.
+pub fn get_n_signals(info: *GIInterfaceInfo) -> int {
+    unsafe { g_interface_info_get_n_signals(info) as int }
+}
+
+pub fn find_signal(info: *GIInterfaceInfo, name: &str) -> *GISignalInfo {
+    name.with_c_str(|c_name| unsafe {
+        g_interface_info_find_signal(info, c_name)
+    })
+}
+
+/// Obtain the number of virtual functions that this interface type has.
+pub fn get_n_vfuncs(info: *GIInterfaceInfo) -> int {
+    unsafe { g_interface_info_get_n_vfuncs(info) as int }
+}
+
+/// Obtain an interface type virtual function at index n.
+pub fn get_vfunc(info: *GIInterfaceInfo, n: int) -> *GIVFuncInfo {
+    unsafe { g_interface_info_get_vfunc(info, n as c_int) }
+}
+
+/// Locate a virtual function slot with name name.
+pub fn find_vfunc(info: *GIInterfaceInfo, name: &str) -> *GIVFuncInfo {
+    name.with_c_str(|c_name| unsafe {
+        g_interface_info_find_vfunc(info, c_name)
+    })
+}
+
+/// Obtain the number of constants that this interface type has.
+pub fn get_n_constants(info: *GIInterfaceInfo) -> int {
+    unsafe { g_interface_info_get_n_constants(info) as int }
+}
+
+/// Obtain an interface type constant at index n.
+pub fn get_constant(info: *GIInterfaceInfo, n: int) -> *GIConstantInfo {
+    unsafe { g_interface_info_get_constant(info, n as c_int) }
+}
+
+/// Returns the layout C structure associated with this GInterface.
+pub fn get_iface_struct(info: *GIInterfaceInfo) -> *GIStructInfo {
+    unsafe { g_interface_info_get_iface_struct(info) }
+}
+
 
 /// Convert GIBaseInfo to GIInterfaceInfo.
-pub fn to_gi_arg_info(object: *GIBaseInfo) -> *GIInterfaceInfo {
+pub fn to_gi_interface_info<T>(object: *T) -> *GIInterfaceInfo {
     unsafe { transmute(object) }
 }

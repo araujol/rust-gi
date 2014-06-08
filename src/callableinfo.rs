@@ -19,7 +19,7 @@ extern crate libc;
 
 use callableinfo::libc::{c_char, c_int};
 use glib_gobject::GBoolean;
-use types::{GIBaseInfo, GICallableInfo, GIArgInfo, GITypeInfo, GITransfer};
+use types::{GICallableInfo, GIArgInfo, GITypeInfo, GITransfer};
 use utils::to_string;
 
 use std::mem::transmute;
@@ -104,6 +104,6 @@ pub fn load_arg(info: *GICallableInfo, n: int, arg: *GIArgInfo) {
 
 
 /// Convert GIBaseInfo to GICallableInfo.
-pub fn to_gi_callable_info(object: *GIBaseInfo) -> *GICallableInfo {
+pub fn to_gi_callable_info<T>(object: *T) -> *GICallableInfo {
     unsafe { transmute(object) }
 }

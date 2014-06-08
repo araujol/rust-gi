@@ -19,7 +19,7 @@ extern crate libc;
 
 use structinfo::libc::{c_char, c_int, size_t};
 use glib_gobject::GBoolean;
-use types::{GIBaseInfo, GIStructInfo, GIFunctionInfo, GIFieldInfo};
+use types::{GIStructInfo, GIFunctionInfo, GIFieldInfo};
 
 use std::mem::transmute;
 
@@ -90,6 +90,6 @@ pub fn is_foreign(info: *GIStructInfo) -> GBoolean {
 
 
 /// Convert GIBaseInfo to GIStructInfo.
-pub fn to_gi_struct_info(object: *GIBaseInfo) -> *GIStructInfo {
+pub fn to_gi_struct_info<T>(object: *T) -> *GIStructInfo {
     unsafe { transmute(object) }
 }

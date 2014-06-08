@@ -18,26 +18,26 @@
 extern crate libc;
 
 use constantinfo::libc::c_int;
-use types;
+use types::{GIConstantInfo, GITypeInfo, GIArgument};
 
 use std::mem::transmute;
 
 
 #[link(name = "girepository-1.0")]
 extern "C" {
-    fn g_constant_info_get_type(info: *types::GIConstantInfo) -> *types::GITypeInfo;
-    fn g_constant_info_free_value(info: *types::GIConstantInfo, value: *types::GIArgument);
-    fn g_constant_info_get_value(info: *types::GIConstantInfo, value: *types::GIArgument) -> c_int;
+    fn g_constant_info_get_type(info: *GIConstantInfo) -> *GITypeInfo;
+    fn g_constant_info_free_value(info: *GIConstantInfo, value: *GIArgument);
+    fn g_constant_info_get_value(info: *GIConstantInfo, value: *GIArgument) -> c_int;
 }
 
 
 /// Obtain the type of the constant as a GITypeInfo.
-pub fn get_type(info: *types::GIConstantInfo) -> *types::GITypeInfo {
+pub fn get_type(info: *GIConstantInfo) -> *GITypeInfo {
     unsafe { g_constant_info_get_type(info) }
 }
 
 /// Free the value returned from g_constant_info_get_value().
-pub fn free_value(info: *types::GIConstantInfo, value: *types::GIArgument) {
+pub fn free_value(info: *GIConstantInfo, value: *GIArgument) {
     unsafe { g_constant_info_free_value(info, value) }
 }
 
@@ -45,12 +45,12 @@ pub fn free_value(info: *types::GIConstantInfo, value: *types::GIArgument) {
 /// parameter. argument needs to be allocated before passing it in. The size of 
 /// the constant value stored in argument will be returned. Free the value with 
 /// g_constant_info_free_value().
-pub fn get_value(info: *types::GIConstantInfo, value: *types::GIArgument) -> int {
+pub fn get_value(info: *GIConstantInfo, value: *GIArgument) -> int {
     unsafe { g_constant_info_get_value(info, value) as int }
 }
 
 
 /// Convert GIBaseInfo to GIConstantInfo.
-pub fn to_gi_struct_info(object: *types::GIBaseInfo) -> *types::GIConstantInfo {
+pub fn to_gi_constant_info<T>(object: *T) -> *GIConstantInfo {
     unsafe { transmute(object) }
 }
