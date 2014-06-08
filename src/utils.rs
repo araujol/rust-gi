@@ -36,3 +36,15 @@ pub fn to_string(char_str: *c_char) -> Option<String> {
         None
     }
 }
+
+pub fn to_vec_string(char_ptr: **c_char) -> Vec<Option<String>> {
+    let mut vstr: Vec<Option<String>> = Vec::new();
+    let mut deps: **c_char = char_ptr;
+    unsafe {
+        while (*deps).is_not_null() {
+            vstr.push(to_string(*deps));
+            deps = deps.offset(1);
+        }
+    }
+    return vstr;
+}

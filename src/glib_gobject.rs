@@ -98,6 +98,7 @@ pub struct GValue {
 }
 
 /* GLib */
+pub enum GOptionGroup {}
 pub enum GMappedFile {}
 
 /* TODO: Get higher level structs for lists using generics */
@@ -118,4 +119,3 @@ pub struct GError {
     code: c_int,
     message: *c_char
 }
-

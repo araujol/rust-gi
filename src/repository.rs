@@ -22,9 +22,10 @@
 extern crate libc;
 
 use repository::libc::{c_char, c_uint};
-use utils::to_string;
-use glib_gobject::{GObject, GType, GSList, GError, GBoolean};
-use types::GIBaseInfo;
+use utils::{to_string, to_vec_string};
+use glib_gobject::{GObject, GType, GSList, GQuark,
+                   GList, GError, GBoolean, GOptionGroup};
+use types::{GIBaseInfo, GIEnumInfo};
 use typelib::GITypelib;
 
 use std::ptr;
@@ -51,33 +52,51 @@ extern "C" {
     fn g_irepository_prepend_search_path(directory: *c_char);
     fn g_irepository_prepend_library_path(directory: *c_char);
     fn g_irepository_get_search_path() -> *GSList;
-    fn g_irepository_load_typelib(repository: *GIRepository, 
+    fn g_irepository_load_typelib(repository: *GIRepository,
                                   typelib: *GITypelib,
                                   flags: GIRepositoryLoadFlags, 
                                   error: **GError) -> *c_char;
-    fn g_irepository_is_registered(repository: *GIRepository, 
+    fn g_irepository_is_registered(repository: *GIRepository,
                                    namespace_: *c_char,
                                    version: *c_char) -> GBoolean;
     fn g_irepository_find_by_name(repository: *GIRepository,
                                   namespace_: *c_char,
                                   name: *c_char) -> *GIBaseInfo;
+    fn g_irepository_enumerate_versions(repository: *GIRepository,
+                                        namespace_: *c_char) -> *GList;
     fn g_irepository_require(repository: *GIRepository,
                              namespace_: *c_char,
                              version: *c_char,
                              flags: GIRepositoryLoadFlags,
                              error: **GError) -> *GITypelib;
-    fn g_irepository_require_private(repository: *GIRepository, 
+    fn g_irepository_require_private(repository: *GIRepository,
                                      typelib_dir: *c_char,
-                                     namespace_: *c_char, 
+                                     namespace_: *c_char,
                                      version: *c_char,
                                      flags: GIRepositoryLoadFlags, 
                                      error: **GError) -> *GITypelib;
-    fn g_irepository_get_n_infos(repository: *GIRepository, namespace_: *c_char) -> c_uint;
-    fn g_irepository_get_info(repository: *GIRepository, 
+    fn g_irepository_get_dependencies(repository: *GIRepository,
+                                      namespace_: *c_char) -> **c_char;
+    fn g_irepository_get_loaded_namespaces(repository: *GIRepository) -> **c_char;
+    fn g_irepository_find_by_gtype(repository: *GIRepository,
+                                   gtype: GType) -> *GIBaseInfo;
+    fn g_irepository_get_n_infos(repository: *GIRepository,
+                                 namespace_: *c_char) -> c_uint;
+    fn g_irepository_get_info(repository: *GIRepository,
                               namespace_: *c_char,
                               index: c_uint) -> *GIBaseInfo;
-    fn g_irepository_get_c_prefix(repository: *GIRepository, namespace_: *c_char) -> *c_char;
-    fn g_irepository_get_typelib_path(repository: *GIRepository, namespace_: *c_char) -> *c_char;
+    fn g_irepository_find_by_error_domain(repository: *GIRepository,
+                                          domain: GQuark) -> *GIEnumInfo;
+    fn g_irepository_get_typelib_path(repository: *GIRepository,
+                                      namespace_: *c_char) -> *c_char;
+    fn g_irepository_get_shared_library(repository: *GIRepository,
+                                        namespace_: *c_char) -> *c_char;
+    fn g_irepository_get_c_prefix(repository: *GIRepository,
+                                  namespace_: *c_char) -> *c_char;
+    fn g_irepository_get_version(repository: *GIRepository,
+                                 namespace_: *c_char) -> *c_char;
+    fn g_irepository_get_option_group() -> *GOptionGroup;
+    fn g_irepository_dump(arg: *c_char, error: **GError) -> GBoolean;
 }
 
 
@@ -144,6 +163,18 @@ pub fn find_by_name(repository: Option<*GIRepository>, namespace: &str,
     })
 }
 
+/// Obtain an unordered list of versions (either currently loaded or available)
+/// for namespace_ in this repository.
+pub fn enumerate_versions(repository: Option<*GIRepository>,
+                          namespace: &str) -> *GList {
+    namespace.with_c_str(|c_namespace| unsafe {
+        match repository {
+            None => g_irepository_enumerate_versions(ptr::null(), c_namespace),
+            Some(repo) => g_irepository_enumerate_versions(repo, c_namespace)
+        }
+    })
+}
+
 /// Force the namespace namespace_ to be loaded if it isn't already.
 pub fn require(repository: Option<*GIRepository>, namespace: &str,
                version: Option<&str>, flags: GIRepositoryLoadFlags,
@@ -191,6 +222,37 @@ pub fn require_private(repository: Option<*GIRepository>, namespace: &str,
     })
 }
 
+/// Return an array of all (transitive) versioned dependencies for namespace_.
+/// Returned strings are of the form namespace-version.
+pub fn get_dependencies(repository: Option<*GIRepository>, namespace: &str) -> Vec<Option<String>> {
+    to_vec_string(namespace.with_c_str(|c_namespace| unsafe {
+        match repository {
+            None => g_irepository_get_dependencies(ptr::null(), c_namespace),
+            Some(repo) => g_irepository_get_dependencies(repo, c_namespace)
+        }
+    }))
+}
+
+/// Return the list of currently loaded namespaces.
+pub fn get_loaded_namespaces(repository: Option<*GIRepository>) -> Vec<Option<String>> {
+    to_vec_string(unsafe {
+        match repository {
+            None => g_irepository_get_loaded_namespaces(ptr::null()),
+            Some(repo) => g_irepository_get_loaded_namespaces(repo)
+        }
+    })
+}
+
+/// Searches all loaded namespaces for a particular GType.
+pub fn find_by_gtype(repository: Option<*GIRepository>, gtype: GType) -> *GIBaseInfo {
+    unsafe {
+        match repository {
+            None => g_irepository_find_by_gtype(ptr::null(), gtype),
+            Some(repo) => g_irepository_find_by_gtype(repo, gtype)
+        }
+    }
+}
+
 /// This function returns the number of metadata entries in given namespace namespace_.
 pub fn get_n_infos(repository: Option<*GIRepository>, namespace: &str) -> uint {
     namespace.with_c_str(|c_namespace| unsafe {
@@ -211,6 +273,38 @@ pub fn get_info(repository: Option<*GIRepository>, namespace: &str, index: uint)
     })
 }
 
+/// Searches for the enum type corresponding to the given GError domain.
+pub fn find_by_error_domain(repository: Option<*GIRepository>, domain: GQuark) -> *GIEnumInfo {
+    unsafe {
+        match repository {
+            None => g_irepository_find_by_error_domain(ptr::null(), domain),
+            Some(repo) => g_irepository_find_by_error_domain(repo, domain)
+        }
+    }
+}
+
+/// If namespace namespace_ is loaded, return the full path to the .typelib file
+/// it was loaded from.
+pub fn get_typelib_path(repository: Option<*GIRepository>, namespace: &str) -> Option<String> {
+    to_string(namespace.with_c_str(|c_namespace| unsafe {
+        match repository {
+            None => g_irepository_get_typelib_path(ptr::null(), c_namespace),
+            Some(repo) => g_irepository_get_typelib_path(repo, c_namespace)
+        }
+    }))
+}
+
+/// This function returns the full path to the shared C library associated with
+/// the given namespace namespace_.
+pub fn get_shared_library(repository: Option<*GIRepository>, namespace: &str) -> Option<String> {
+    to_string(namespace.with_c_str(|c_namespace| unsafe {
+        match repository {
+            None => g_irepository_get_shared_library(ptr::null(), c_namespace),
+            Some(repo) => g_irepository_get_shared_library(repo, c_namespace)
+        }
+    }))
+}
+
 /// This function returns the "C prefix", or the C level namespace associated 
 /// with the given introspection namespace.
 pub fn get_c_prefix(repository: Option<*GIRepository>, namespace: &str) -> Option<String> {
@@ -222,13 +316,27 @@ pub fn get_c_prefix(repository: Option<*GIRepository>, namespace: &str) -> Optio
     }))
 }
 
-/// If namespace namespace_ is loaded, return the full path to the .typelib file 
-/// it was loaded from.
-pub fn get_typelib_path(repository: Option<*GIRepository>, namespace: &str) -> Option<String> {
+/// This function returns the loaded version associated with the given
+/// namespace namespace_.
+pub fn get_version(repository: Option<*GIRepository>, namespace: &str) -> Option<String> {
     to_string(namespace.with_c_str(|c_namespace| unsafe {
         match repository {
-            None => g_irepository_get_typelib_path(ptr::null(), c_namespace),
-            Some(repo) => g_irepository_get_typelib_path(repo, c_namespace)
+            None => g_irepository_get_version(ptr::null(), c_namespace),
+            Some(repo) => g_irepository_get_version(repo, c_namespace)
         }
     }))
+}
+
+/// Obtain the option group for girepository, it's used by the dumper and for
+/// programs that wants to provide introspection information
+pub fn get_option_group() -> *GOptionGroup {
+    unsafe { g_irepository_get_option_group() }
+}
+
+/// Argument specified is a comma-separated pair of filenames; i.e. of the
+/// form "input.txt,output.xml".
+pub fn dump(arg: &str, error: **GError) -> GBoolean {
+    arg.with_c_str(|c_arg| unsafe {
+        g_irepository_dump(c_arg, error)
+    })
 }
